@@ -385,6 +385,51 @@
         font-weight: 500;
         display: none;
       }
+      
+/* Smooth Animations & Transitions */
+#loginScreen {
+  animation: fadeInUp 0.6s ease-out;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.pin-dots span {
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.pin-dots span.filled {
+  transform: scale(1.2);
+}
+
+.pin-pad button {
+  transition: all 0.2s ease;
+}
+
+.pin-pad button:active {
+  transform: scale(0.9);
+  background: black;
+  color: white;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sanftes Einblenden von Fehlermeldung */
+#loginError {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#loginError.show {
+  opacity: 1;
+}
   </style>
 </head>
 <body>
@@ -861,11 +906,13 @@
         const loginError = document.getElementById('loginError');
 
         if (pin.length !== 4) {
+          loginError.classList.add('show');
           loginError.style.display = 'block';
           return;
         }
 
-        loginError.style.display = 'none';
+        loginError.classList.remove('show');
+        setTimeout(() => loginError.style.display = 'none', 300);
 
         const { data: userData, error } = await supabase
           .from('Database')
@@ -873,11 +920,13 @@
           .eq('id', pin);
 
         if (error || !userData || userData.length === 0) {
+          loginError.classList.add('show');
           loginError.style.display = 'block';
           return;
         }
 
-        loginError.style.display = 'none';
+        loginError.classList.remove('show');
+        setTimeout(() => loginError.style.display = 'none', 300);
         loginScreen.style.display = 'none';
         welcomeDiv.style.display = 'block';
 
