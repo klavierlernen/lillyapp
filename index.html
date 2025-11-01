@@ -289,8 +289,8 @@
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
-      background: white;
-      color: black;
+      background: #3a6ff8;
+      color: white;
       cursor: pointer;
       font-size: 1rem;
       margin-left: 10px;
@@ -302,191 +302,26 @@
       margin-top: 10px;
       display: none;
     }
-      
-      /* Neues minimalistisches PIN-Design (weiß/schwarz) */
-      #loginScreen {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        padding-top: 60px;
-        min-height: 100vh;
-        background: white;
-        color: black;
-        text-align: center;
-        gap: 20px;
-      }
-
-
-      .pin-title {
-        font-size: 2.2rem;
-        font-weight: 600;
-        margin: 0;
-      }
-
-      .pin-subtitle {
-        color: black;
-        font-size: 1rem;
-        margin-bottom: 10px;
-      }
-
-      .pin-dots {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin-bottom: 20px;
-      }
-
-      .pin-dots span {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 2px solid black;
-        background: transparent;
-        transition: background 0.2s;
-      }
-
-      .pin-dots span.filled {
-        background: black;
-      }
-
-      .pin-pad {
-        display: grid;
-        grid-template-columns: repeat(3, 70px);
-        gap: 15px;
-        justify-content: center;
-      }
-
-      .pin-pad button {
-        width: 70px;
-        height: 70px;
-        font-size: 1.4rem;
-        border-radius: 50%;
-        border: 2px solid black;
-        background: white;
-        color: black;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-
-      .pin-pad button:hover {
-        background: black;
-        color: white;
-      }
-
-      .pin-pad .empty {
-        visibility: hidden;
-        pointer-events: none;
-      }
-
-      #loginError {
-        color: red;
-        margin-top: 20px;
-        font-weight: 500;
-        display: none;
-      }
-      
-/* Smooth Animations & Transitions */
-#loginScreen {
-  animation: fadeInUp 0.6s ease-out;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.pin-dots span {
-  transition: background 0.25s ease, transform 0.2s ease;
-}
-
-.pin-dots span.filled {
-  transform: scale(1.2);
-}
-
-.pin-pad button {
-  transition: all 0.2s ease;
-}
-
-.pin-pad button:active {
-  transform: scale(0.9);
-  background: black;
-  color: white;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Sanftes Einblenden von Fehlermeldung */
-#loginError {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-#loginError.show {
-  opacity: 1;
-}
   </style>
 </head>
 <body>
-  <header></header>
+  <header>
+    <div class="emoji" data-feather="user"></div>
+  </header>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const dots = document.querySelectorAll('.pin-dots span');
-    const padButtons = document.querySelectorAll('.pin-pad button');
-    let pinInput = '';
-
-    padButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.classList.contains('empty')) return;
-        if (btn.classList.contains('del')) {
-          pinInput = pinInput.slice(0, -1);
-        } else {
-          if (pinInput.length < 4) pinInput += btn.textContent;
-        }
-
-        dots.forEach((dot, idx) => {
-          dot.classList.toggle('filled', idx < pinInput.length);
-        });
-
-        if (pinInput.length === 4) {
-          document.getElementById('pinInput').value = pinInput;
-          document.getElementById('loginBtn').click();
-          pinInput = '';
-          setTimeout(() => dots.forEach(d => d.classList.remove('filled')), 500);
-        }
-      });
-    });
-  });
-  </script>
-  
   <div id="loginScreen">
-      <p class="pin-title">Hallo! Bitte gib deine PIN ein</p>
-    <div class="pin-dots">
-      <span></span><span></span><span></span><span></span>
-    </div>
-    <div class="pin-pad">
-      <button>1</button><button>2</button><button>3</button>
-      <button>4</button><button>5</button><button>6</button>
-      <button>7</button><button>8</button><button>9</button>
-      <button class="empty"></button><button>0</button><button class="del">⌫</button>
-    </div>
+    <h1>Lilly</h1>
+    <p>Bitte 4-stellige PIN eingeben</p>
+    <input id="pinInput" type="password" maxlength="4" placeholder="••••" autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
+    <button id="loginBtn">Login</button>
     <p id="loginError">Ungültige PIN</p>
-    <!-- Unsichtbares Input-Feld, bleibt für bestehende JS-Logik -->
-    <input id="pinInput" type="hidden" maxlength="4" />
-    <button id="loginBtn" style="display:none;"></button>
   </div>
 
   <div class="welcome" style="display:none;">
     <h1>Willkommen zurück!</h1>
   </div>
 
-  <h2 style="display:none;">Ausstehend</h2>
+  <h2>Ausstehend</h2>
   <template id="card-template">
     <article class="card">
       <div class="badge-circle"></div>
@@ -899,109 +734,82 @@
         };
       }
 
-      // Login button event
+      // Neuer Login-Button-Event-Listener: sucht PIN in Tabelle "database"
       document.getElementById('loginBtn').addEventListener('click', async () => {
-        const pinInput = document.getElementById('pinInput');
-        const pin = pinInput.value.trim();
+        const pin = document.getElementById('pinInput').value.trim();
         const loginError = document.getElementById('loginError');
+        const loginScreen = document.getElementById('loginScreen');
+        const welcomeDiv = document.querySelector('.welcome');
+        const welcomeTitle = document.querySelector('.welcome h1');
 
-        if (pin.length !== 4) {
-          loginError.classList.add('show');
+        if (!pin) {
+          loginError.textContent = 'Bitte PIN eingeben.';
           loginError.style.display = 'block';
           return;
         }
 
-        loginError.classList.remove('show');
-        setTimeout(() => loginError.style.display = 'none', 300);
-
+        // 🔍 Suche nach Benutzer mit dieser ID in Tabelle "database"
         const { data: userData, error } = await supabase
-          .from('Database')
+          .from('database')
           .select('*')
-          .eq('id', pin);
+          .eq('id', pin)
+          .limit(1);
 
-        if (error || !userData || userData.length === 0) {
-          loginError.classList.add('show');
+        if (error) {
+          console.error('Fehler bei der Datenbankabfrage:', error.message);
+          loginError.textContent = 'Fehler bei der Datenbankabfrage.';
           loginError.style.display = 'block';
           return;
         }
 
-        loginError.classList.remove('show');
-        setTimeout(() => loginError.style.display = 'none', 300);
+        if (!userData || userData.length === 0) {
+          loginError.textContent = 'PIN nicht gefunden.';
+          loginError.style.display = 'block';
+          return;
+        }
+
+        // ✅ Benutzer gefunden
+        const user = userData[0];
+        localStorage.setItem('id', pin);
+        localStorage.setItem('role', user.role || 'user');
+        welcomeTitle.textContent = `Willkommen zurück, ${user.UserName || 'Nutzer'}!`;
+
+        // Karten laden
+        await loadCards(pin);
+
+        // Nach erfolgreichem Login UI umschalten
+        loginError.style.display = 'none';
         loginScreen.style.display = 'none';
         welcomeDiv.style.display = 'block';
 
-        const user = userData[0];
-        localStorage.setItem('id', pin);
-        welcomeTitle.textContent = `Willkommen zurück, ${user.UserName}!`;
+        // Titel "Ausstehend" einblenden
+        const pendingTitle = document.getElementById('pendingTitle');
+        if (pendingTitle) pendingTitle.style.display = 'block';
 
-        // Rolle im localStorage setzen
-        if (user.role === 'admin') {
-          localStorage.setItem('role', 'admin');
-        } else {
-          localStorage.setItem('role', 'user');
-        }
-
-        // Wenn admin -> Stift anzeigen und Admin Panel zeigen
+        // Wenn Admin, Adminfunktionen aktivieren
         if (user.role === 'admin') {
           addAdminButton();
-          // Titel "Ausstehend" zu "Übersicht" ändern
           const h2s = document.querySelectorAll('h2');
-          if (h2s.length > 0) {
-            h2s[0].textContent = 'Übersicht';
-          }
+          if (h2s.length > 0) h2s[0].textContent = 'Übersicht';
         } else {
           adminPanel.style.display = 'none';
           const editIcon = document.querySelector('.edit');
-          if(editIcon) editIcon.remove();
+          if (editIcon) editIcon.remove();
         }
 
-        await loadCards(pin);
-
-        // Echtzeit-Aktualisierung aktivieren (Supabase Realtime)
+        // Echtzeit-Aktualisierung aktivieren
         let reloadTimeout;
         const channel = supabase
           .channel('live-updates')
           .on('postgres_changes',
-            { event: '*', schema: 'public', table: 'Database' },
+            { event: '*', schema: 'public', table: 'database' },
             async (payload) => {
               console.log('Live-Update:', payload);
-
               if (reloadTimeout) clearTimeout(reloadTimeout);
               reloadTimeout = setTimeout(async () => {
                 const currentPin = localStorage.getItem('id');
-                if (currentPin) {
-                  await loadCards(currentPin);
-                }
+                if (currentPin) await loadCards(currentPin);
               }, 500);
-
-              // --- Neue Logik: Benachrichtigung bei eigenen Containern ---
-              const currentPin = localStorage.getItem('id');
-              const newData = payload.new || {};
-              const eventType = payload.eventType;
-
-              if (newData.id && newData.id.startsWith(currentPin + '_')) {
-                if (document.hidden && Notification.permission === 'granted') {
-                  const registration = await navigator.serviceWorker.ready;
-
-                  const title = eventType === 'UPDATE'
-                    ? 'Dein Dienst wurde aktualisiert'
-                    : eventType === 'INSERT'
-                    ? 'Neuer Dienst erstellt'
-                    : 'Ein Dienst wurde geändert';
-
-                  const message = `Typ: ${newData.typ || 'Unbekannt'} • Status: ${newData.status || 'geändert'}`;
-
-                  registration.showNotification(title, {
-                    body: message,
-                    icon: '/icon.png',
-                    badge: '/badge.png',
-                    data: { id: newData.id, status: newData.status },
-                    actions: [
-                      { action: 'open', title: 'App öffnen' }
-                    ]
-                  });
-                }
-              }
             }
           )
           .subscribe();
