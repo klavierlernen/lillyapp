@@ -204,7 +204,7 @@
 
     /* Buttonsleiste in Karten (deine existierenden Aktionen) */
     .card-buttons{
-      display:none; gap:10px; margin-top:12px; justify-content:flex-end;
+      display:none; gap:10px; margin-top:12px; justify-content:flex-end; align-items:center;
     }
     .task-card.expanded .card-buttons{ display:flex; }
     .chip-btn{
@@ -213,6 +213,14 @@
     }
     .chip-btn.accept:hover{ background:var(--success); color:#fff; }
     .chip-btn.decline:hover{ background:var(--danger); color:#fff; }
+
+    .warning-indicator{
+      display:flex; align-items:center; gap:6px;
+      padding:6px 8px; border-radius:8px;
+      background:rgba(220,38,38,.12); color:var(--danger);
+      font-weight:600; font-size:.85rem;
+    }
+    .warning-indicator svg{ width:18px; height:18px; }
 
     /* Admin Panel clean */
     #adminPanel{
@@ -297,6 +305,10 @@
           <button class="chip-btn accept" title="Annehmen"><i data-feather="check-circle"></i></button>
           <button class="chip-btn decline" title="Ablehnen"><i data-feather="x-circle"></i></button>
           <button class="chip-btn withdraw" title="Zurückziehen"><i data-feather="corner-up-left"></i></button>
+          <span class="warning-indicator hidden" role="status" aria-live="polite" title="Änderung erforderlich">
+            <i data-feather="alert-triangle"></i>
+            Änderung nötig
+          </span>
           <button class="chip-btn edit-entry" title="Bearbeiten"><i data-feather="edit-3"></i></button>
         </div>
       </div>
@@ -345,9 +357,15 @@
       const declineBtn  = frag.querySelector('.decline');
       const withdrawBtn = frag.querySelector('.withdraw');
       const editBtn     = frag.querySelector('.edit-entry');
+      const warningIndicator = frag.querySelector('.warning-indicator');
 
       if(role === 'admin'){ acceptBtn.style.display='none'; declineBtn.style.display='none'; }
       else { withdrawBtn.style.display='none'; editBtn.style.display='none'; }
+
+      if(warningIndicator){
+        if(item.status === 'rejected'){ warningIndicator.classList.remove('hidden'); }
+        else { warningIndicator.classList.add('hidden'); }
+      }
 
       // expand/collapse: Buttons sichtbar machen
       card.addEventListener('click', (e)=>{
@@ -357,7 +375,7 @@
 
       // Actions
       acceptBtn.addEventListener('click', (e)=>{ e.stopPropagation(); updateStatus(item.id,'approved'); });
-      declineBtn.addEventListener('click', (e)=>{ e.stopPropagation(); updateStatus(item.id,'pending');  });
+      declineBtn.addEventListener('click', (e)=>{ e.stopPropagation(); updateStatus(item.id,'rejected');  });
       withdrawBtn.addEventListener('click', async (e)=>{
         e.stopPropagation();
         if(confirm('Diesen Eintrag wirklich löschen?')){
@@ -405,12 +423,12 @@
       }
 
       const pending  = data.filter(d=>d.status==='pending');
-      const approved = data.filter(d=>d.status==='approved');
+      const upcoming = data.filter(d=>d.status==='approved' || d.status==='rejected');
 
       if(pending.length===0){ noPendingMsg.classList.remove('hidden'); }
       pending.forEach(item => pendingGrid.appendChild(createCard(item)));
 
-      approved.forEach(item => upcomingGrid.appendChild(createCard(item)));
+      upcoming.forEach(item => upcomingGrid.appendChild(createCard(item)));
 
       feather.replace();
     }
