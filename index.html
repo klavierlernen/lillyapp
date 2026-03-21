@@ -600,6 +600,22 @@
       "https://uewrybgyaanhjoyqpmky.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3J5Ymd5YWFuaGpveXFwbWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NjA2ODYsImV4cCI6MjA3NzMzNjY4Nn0.gTv68th-3S2hErX_Dp8RwjU3oZtQXLZFToLGUM5inT8"
     );
+    const readOnlyTables = new Set(['streak_view']);
+    const blockedWriteMethods = new Set(['insert', 'update', 'upsert', 'delete']);
+    const supabaseFrom = supabase.from.bind(supabase);
+    supabase.from = (table)=>{
+      const query = supabaseFrom(table);
+      if(!readOnlyTables.has(table)) return query;
+      return new Proxy(query, {
+        get(q, qprop){
+          if(blockedWriteMethods.has(qprop)){
+            return ()=>Promise.reject(new Error(`Schreibzugriff auf ${table} ist deaktiviert.`));
+          }
+          const value = q[qprop];
+          return typeof value === 'function' ? value.bind(q) : value;
+        }
+      });
+    };
 
     const loginScreen  = document.getElementById('loginScreen');
     const appHeader    = document.getElementById('appHeader');
